@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Our Love Universe ✨💖</title>
+  <meta name="theme-color" content="#ff3ea5" />
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- GSAP & Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#07030a;
+      --pink:#ff54b5;
+      --purple:#8a2be2;
+      --blue:#18b0ff;
+      --card:#12091a;
+      --text:#f5e9ff;
+      --muted:#caa9ff;
+      --glass:rgba(255,255,255,0.08);
+      --glow:0 0 24px rgba(255,84,181,.6), 0 0 64px rgba(26,164,255,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; background: radial-gradient(1200px 600px at 70% 10%, rgba(255,84,181,.15), transparent 60%),
+                               radial-gradient(1000px 500px at 10% 90%, rgba(24,176,255,.12), transparent 60%),
+                               linear-gradient(180deg, #0a0514, #06030e 30%, #05020c 100%);
+      color:var(--text);
+      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      overflow-x:hidden;
+    }
+
+    /* Fixed 3D background canvas */
+    #bg3d{
+      position:fixed; inset:0; z-index:-1; display:block; width:100%; height:100%;
+    }
+
+    /* Global layout */
+    .container{max-width:1200px; margin:0 auto; padding:64px 20px;}
+    section{position:relative; padding:96px 0;}
+    .title{
+      font-family:Orbitron, Poppins; letter-spacing:1px; text-transform:uppercase;
+      font-weight:800; font-size:clamp(28px, 4vw, 54px);
+      text-shadow:0 2px 16px rgba(255,84,181,.35);
+    }
+    .subtitle{color:var(--muted); max-width:820px; line-height:1.7}
+
+    /* Neon button */
+    .btn{
+      display:inline-flex; align-items:center; gap:10px; padding:14px 22px; border-radius:14px;
+      background:linear-gradient(90deg,var(--pink), var(--blue)); color:#100518; font-weight:800; border:none;
+      box-shadow:0 10px 30px rgba(255,84,181,.35), 0 0 0 2px rgba(255,255,255,.08) inset; cursor:pointer;
+      transition:transform .2s ease, box-shadow .2s ease; text-transform:uppercase; letter-spacing:1px;
+    }
+    .btn:hover{ transform:translateY(-2px) scale(1.02); box-shadow:0 16px 40px rgba(24,176,255,.35), 0 0 0 2px rgba(255,255,255,.15) inset; }
+
+    /* Frosted glass card */
+    .glass{ background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+            border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:var(--glow);
+            backdrop-filter: blur(12px); }
+
+    /* Top neon nav */
+    .topbar{position:sticky; top:0; z-index:20; backdrop-filter: blur(10px); background:rgba(5,2,12,.35); border-bottom:1px solid rgba(255,255,255,.08)}
+    .topnav{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 20px; max-width:1200px; margin:0 auto}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:1px}
+    .dot{width:12px; height:12px; border-radius:50%; background: radial-gradient(circle at 30% 30%, #fff, var(--pink) 35%, transparent 60%); filter: drop-shadow(0 0 10px var(--pink));}
+    .navlinks{display:flex; gap:14px; flex-wrap:wrap}
+    .navlinks a{color:var(--muted); text-decoration:none; font-weight:600; padding:8px 12px; border-radius:12px; border:1px solid transparent}
+    .navlinks a:hover{ color:#fff; border-color:rgba(255,255,255,.18); background:rgba(255,255,255,.05)}
+
+    /* Hero / Entry */
+    .hero{ display:grid; place-items:center; min-height:100svh; text-align:center; }
+    .names{ font-size: clamp(28px, 5vw, 64px); font-weight:800; }
+    .names span{ background:linear-gradient(90deg, #fff, var(--pink) 40%, var(--blue)); -webkit-background-clip:text; background-clip:text; color:transparent; filter: drop-shadow(0 0 30px rgba(255,84,181,.35)); }
+    .tag{ margin-top:14px; color:var(--muted) }
+
+    .entry-gate{ margin-top:30px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap }
+
+    /* Floating hearts ring */
+    .ring{ position:absolute; inset:auto 0 -40px 0; display:flex; justify-content:center; pointer-events:none; }
+    .heart{ width:14px; height:14px; position:relative; transform: rotate(45deg); margin:0 6px; animation: float 6s ease-in-out infinite; }
+    .heart:before, .heart:after{ content:""; position:absolute; width:100%; height:100%; background: radial-gradient(circle at 30% 30%, #fff, var(--pink) 35%, rgba(255,84,181,.8)); border-radius:50%; box-shadow:0 0 16px rgba(255,84,181,.5); }
+    .heart:before{ left:-50%; }
+    .heart:after{ top:-50%; }
+    @keyframes float{ 0%,100%{ transform: translateY(0) rotate(45deg);} 50%{ transform: translateY(-18px) rotate(45deg);} }
+
+    /* Section: Love Animations */
+    .love-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap:22px; margin-top:28px }
+    .holo{ padding:26px; position:relative; overflow:hidden }
+    .holo:before{ content:""; position:absolute; inset:-2px; background: conic-gradient(from 0deg, rgba(255,84,181,.5), rgba(24,176,255,.5), rgba(138,43,226,.45), rgba(255,84,181,.5)); filter:blur(22px); opacity:.6; }
+    .holo > .inner{ position:relative; z-index:2 }
+
+    /* Beating heart */
+    .big-heart{ width:140px; height:140px; margin:0 auto 10px; position:relative; transform: rotate(45deg); animation: beat 1.3s ease-in-out infinite; }
+    .big-heart:before,.big-heart:after{ content:""; position:absolute; width:100%; height:100%; background: radial-gradient(circle at 30% 30%, #fff, var(--pink) 40%, rgba(255,84,181,.9)); border-radius:50%; box-shadow:0 0 40px rgba(255,84,181,.5); }
+    .big-heart:before{ left:-50%; }
+    .big-heart:after{ top:-50%; }
+    @keyframes beat{ 0%,100%{ transform: scale(1) rotate(45deg);} 25%{ transform: scale(1.12) rotate(45deg);} 50%{ transform: scale(0.96) rotate(45deg);} 75%{ transform: scale(1.1) rotate(45deg);} }
+
+    /* Section: Life Timeline */
+    .timeline{ position:relative; margin-top:40px }
+    .timeline:before{ content:""; position:absolute; left:calc(50% - 2px); top:0; bottom:0; width:4px; background: linear-gradient(180deg, var(--blue), var(--pink)); filter: blur(.3px); }
+    .t-item{ width:min(520px, 85vw); padding:18px 18px 18px 18px; border-radius:16px; margin:24px; position:relative; }
+    .t-item:nth-child(odd){ margin-left:auto; }
+    .t-item:nth-child(even){ margin-right:auto; }
+    .t-item .dot{ position:absolute; top:50%; transform:translateY(-50%); right:-42px; }
+    .t-item:nth-child(even) .dot{ left:-42px; right:auto; }
+
+    /* Section: Photos 3D carousel */
+    .carousel-wrap{ perspective:1200px; height:420px; display:grid; place-items:center; margin-top:30px }
+    .carousel{ position:relative; width:320px; height:220px; transform-style: preserve-3d; animation: spin 20s linear infinite; }
+    @keyframes spin{ from{ transform: rotateY(0deg)} to{ transform: rotateY(360deg)} }
+    .panel{ position:absolute; width:320px; height:220px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.14); box-shadow: var(--glow) }
+    .panel img{ width:100%; height:100%; object-fit:cover; display:block; filter:saturate(1.1) contrast(1.05); }
+
+    /* Section: Future Goals */
+    .goals{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:26px }
+    .goal{ padding:20px; border-radius:16px; position:relative; overflow:hidden }
+    .goal h4{ margin:6px 0 4px }
+    .goal p{ margin:0; color:var(--muted); font-size:14px }
+
+    /* Section: Lifetime Together */
+    .center{ display:grid; place-items:center; }
+    .infinity{ width:min(760px, 90vw); height:300px; }
+    .lifetext{ margin-top:18px; font-weight:800; font-size:clamp(20px, 2.6vw, 34px); text-align:center; text-shadow: var(--glow) }
+
+    /* Music control */
+    .player{ position:fixed; right:16px; bottom:16px; z-index:30; }
+    .player button{ padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); color:#fff; font-weight:700; cursor:pointer }
+
+    /* Footer */
+    footer{ text-align:center; color:var(--muted); padding:40px 0; font-size:14px }
+
+    /* Utilities */
+    .fade-up{ opacity:0; transform: translateY(20px); }
+  </style>
+</head>
+<body>
+  <canvas id="bg3d"></canvas>
+
+  <!-- Sticky neon nav (no About/Contact) -->
+  <div class="topbar">
+    <div class="topnav">
+      <div class="brand"><span class="dot"></span> <span id="brand">OUR LOVE UNIVERSE</span></div>
+      <nav class="navlinks">
+        <a href="#hero">Entry</a>
+        <a href="#love">Love</a>
+        <a href="#life">Life</a>
+        <a href="#photos">Photos</a>
+        <a href="#goals">Future Goals</a>
+        <a href="#lifetime">Lifetime Together</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- HERO / COUPLE ENTRY -->
+  <section class="hero container" id="hero">
+    <div>
+      <div class="names title">
+        <span id="nameA">Sagar</span>
+        <span style="opacity:.6">💖</span>
+        <span id="nameB">Niharika</span>
+      </div>
+      <p class="subtitle">Welcome to our dream life </p>
+      <p class="description">thanks to com in my life aap mere zindegi me aake mera zendegi hi badal diye .</p>
+
+      <div class="entry-gate">
+        <button class="btn" id="enterBtn">Enter Our Universe</button>
+        <button class="btn" id="swapBtn" style="background:linear-gradient(90deg,var(--blue),var(--pink))">Swap Names</button>
+      </div>
+      <div class="ring" aria-hidden="true">
+        <div class="heart" style="animation-delay:0s"></div>
+        <div class="heart" style="animation-delay:.4s"></div>
+        <div class="heart" style="animation-delay:.8s"></div>
+        <div class="heart" style="animation-delay:1.2s"></div>
+        <div class="heart" style="animation-delay:1.6s"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOVE ANIMATIONS -->
+  <section id="love">
+    <div class="container">
+      <h2 class="title fade-up">Love Animations</h2>
+      <p class="subtitle fade-up">Aapke bina zindagi bas ek safar tha,
+Aapke  aane se har pal ek asar tha.
+
+Dil ko mila aapke pyar ka sahara,
+Meri zindagi me aane ke liye shukriya</p>
+
+      <div class="love-grid">
+        <div class="holo glass fade-up">
+          <div class="inner" style="text-align:center">
+            <div class="big-heart"></div>
+            <h3>Heartbeat Sync</h3>
+            <p class="subtitle">Jine k liye jaan jaruri hai, kuch pane k liye arman jaruri hai, chahe kitna bhi gam ho mere duniya me, tumhare labon par muskan jaruri hai</p>
+          </div>
+        </div>
+        <div class="holo glass fade-up">
+          <div class="inner">
+            <h3>Hologram Promise</h3>
+            <p class="subtitle">You & Me — Forever. Glowing rings orbit our dreams with gentle light trails.</p>
+            <canvas id="rings" style="width:100%; height:180px; display:block; margin-top:10px"></canvas>
+          </div>
+        </div>
+        <div class="holo glass fade-up">
+          <div class="inner">
+            <h3>Star Whisper</h3>
+            <p class="subtitle">Najron ka kya kasur jo dillagi aapse se ho gayi, aap ho hi itni pyaari ki mohabbat aapse ho gayi</p>
+            <button class="btn" id="wish">Make a Wish </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIFE TIMELINE -->
+  <section id="life">
+    <div class="container">
+      <h2 class="title fade-up">Life — Our Journey</h2>
+      <p class="subtitle fade-up">Milestones that shaped our universe.</p>
+
+      <div class="timeline">
+        <div class="t-item glass fade-up">
+          <div class="dot"></div>
+          <h3>First Hello</h3>
+          <p class="subtitle">The moment the stars aligned and the universe said “Begin”.</p>
+        </div>
+        <div class="t-item glass fade-up">
+          <div class="dot"></div>
+          <h3>First Memory</h3>
+          <p class="subtitle">Laughs, coffee, and neon city lights — we saved this one forever.</p>
+        </div>
+        <div class="t-item glass fade-up">
+          <div class="dot"></div>
+          <h3>Tough Days, Stronger Hearts</h3>
+          <p class="subtitle">Even in storms, we chose each other — every single time.</p>
+        </div>
+        <div class="t-item glass fade-up">
+          <div class="dot"></div>
+          <h3>Our Secret Universe</h3>
+          <p class="subtitle">A place only we know — built with trust, jokes, and midnight talks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHOTOS CAROUSEL (replace src with your pics) -->
+  <section id="photos">
+    <div class="container">
+      <h2 class="title fade-up">Photos — Glowing Moments</h2>
+      <p class="subtitle fade-up">Replace these placeholders with our favorite clicks.</p>
+
+      <div class="carousel-wrap">
+        <div class="carousel" id="carousel">
+          <!-- 8 panels around a circle -->
+          <div class="panel glass"><img src="https://i.ibb.co/4nqbhjDf/7e4a62f4-f69c-4ef8-9702-7dfdc59e3a1d.jpg" alt="photo"/></div>
+          <div class="panel glass"><img src="https://i.ibb.co/bRm3yYk1/7fe4b312-97c2-461d-a8dd-f111fe8871df.jpg" alt="photo"/></div>
+          <div class="panel glass"><img src="https://i.ibb.co/4nqbhjDf/7e4a62f4-f69c-4ef8-9702-7dfdc59e3a1d.jpg" alt="photo"/></div>
+          <div class="panel glass"><img src="https://i.ibb.co/gbWBhLgZ/d5d63376-218b-4d14-a2a1-8de5f56e3fcc.jpg" alt="photo"/></div>
+          <div class="panel glass"><img src="https://i.ibb.co/4nqbhjDf/7e4a62f4-f69c-4ef8-9702-7dfdc59e3a1d.jpg" alt="photo"/></div>
+          <div class="panel glass"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop" alt="photo"/></div>
+          <div class="panel glass"><img src="https://i.ibb.co/4nqbhjDf/7e4a62f4-f69c-4ef8-9702-7dfdc59e3a1d.jpg" alt="photo"/></div>
+          <div class="panel glass"><img src="https://images.unsplash.com/photo-1460364157752-926555421a7e?q=80&w=1200&auto=format&fit=crop" alt="photo"/></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FUTURE GOALS -->
+  <section id="goals">
+    <div class="container">
+      <h2 class="title fade-up">Future Goals — Our Mission</h2>
+      <p class="subtitle fade-up">Promises in neon ink — glowing clear.</p>
+      <div class="goals">
+        <div class="goal glass fade-up">
+          <h4>Travel the World</h4>
+          <p>Tokyo nights, Paris sunsets, mountains & oceans — hand in hand.</p>
+        </div>
+        <div class="goal glass fade-up">
+          <h4>Build Our Home</h4>
+          <p>Plants, playlists, purple lights — a cozy stargazing corner.</p>
+        </div>
+        <div class="goal glass fade-up">
+          <h4>Grow Together</h4>
+          <p>Learn, level up, and celebrate every tiny win.</p>
+        </div>
+        <div class="goal glass fade-up">
+          <h4>Give Back</h4>
+          <p>Kindness projects, teaching, and surprise smiles for strangers.</p>
+        </div>
+      </div>
+      <svg id="goalLinks" width="0" height="0" style="position:absolute"></svg>
+    </div>
+  </section>
+
+  <!-- LIFETIME TOGETHER -->
+  <section id="lifetime">
+    <div class="container center">
+      <h2 class="title fade-up">Lifetime — Together, Until Infinity</h2>
+      <svg class="infinity fade-up" viewBox="0 0 1000 400" fill="none">
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#18b0ff"/>
+            <stop offset="50%" stop-color="#ff54b5"/>
+            <stop offset="100%" stop-color="#8a2be2"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <path id="infinityPath" d="M100,200 C220,60 380,60 500,200 C620,340 780,340 900,200 C780,60 620,60 500,200 C380,340 220,340 100,200 Z"
+              stroke="url(#grad)" stroke-width="10" filter="url(#glow)"/>
+      </svg>
+      <div class="lifetext fade-up">Together Forever — <span id="pairLabel">Sagar & You</span></div>
+      <div style="margin-top:18px">
+        <button class="btn" id="confetti">Celebrate Us</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    thanks 💖 mere life me aane k liye
+  </footer>
+
+  <!-- Simple audio (user-gesture to play) -->
+  <audio id="bgm" loop preload="none">
+    <source src="https://cdn.pixabay.com/download/audio/2021/11/10/audio_2f0f1f0b3c.mp3?filename=ambient-piano-112191.mp3" type="audio/mpeg">
+  </audio>
+  <div class="player glass"><button id="musicBtn">Play Music</button></div>
+
+<script>
+  /* =====================
+     QUICK PERSONALIZATION
+     ===================== */
+  const COUPLE = {
+    a: 'Sagar',   // 👉 change name A
+    b: 'Niharika'    // 👉 change name B
+  };
+
+  // Apply names
+  const nameA = document.getElementById('nameA');
+  const nameB = document.getElementById('nameB');
+  nameA.textContent = COUPLE.a;
+  nameB.textContent = COUPLE.b;
+  document.getElementById('brand').textContent = `${COUPLE.a.toUpperCase()} × ${COUPLE.b.toUpperCase()}`;
+  document.getElementById('pairLabel').textContent = `${COUPLE.a} & ${COUPLE.b}`;
+
+  // Swap button
+  document.getElementById('swapBtn').addEventListener('click', ()=>{
+    const a = nameA.textContent; const b = nameB.textContent; nameA.textContent = b; nameB.textContent = a;
+    document.getElementById('brand').textContent = `${nameA.textContent.toUpperCase()} × ${nameB.textContent.toUpperCase()}`;
+    document.getElementById('pairLabel').textContent = `${nameA.textContent} & ${nameB.textContent}`;
+  });
+
+  // Smooth enter
+  document.getElementById('enterBtn').addEventListener('click', ()=>{
+    document.querySelector('#love').scrollIntoView({behavior:'smooth'});
+  });
+
+  /* =====================
+     THREE.JS BACKGROUND
+     ===================== */
+  const bgCanvas = document.getElementById('bg3d');
+  const renderer = new THREE.WebGLRenderer({canvas: bgCanvas, antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 1000);
+  camera.position.set(0,0,22);
+
+  // Stars/particles
+  const starGeometry = new THREE.BufferGeometry();
+  const starCount = 1800;
+  const positions = new Float32Array(starCount*3);
+  for(let i=0;i<starCount;i++){
+    positions[i*3+0] = (Math.random()-0.5)*160;
+    positions[i*3+1] = (Math.random()-0.5)*90;
+    positions[i*3+2] = (Math.random()-0.5)*160;
+  }
+  starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const starMaterial = new THREE.PointsMaterial({ size: 0.08, color: 0xff7ad6 });
+  const stars = new THREE.Points(starGeometry, starMaterial);
+  scene.add(stars);
+
+  // Floating hologram hearts (sprites)
+  function createHeartSprite(){
+    const size = 128;
+    const canvas = document.createElement('canvas'); canvas.width=canvas.height=size;
+    const ctx = canvas.getContext('2d');
+    ctx.translate(size/2, size/2); ctx.rotate(Math.PI/4);
+    const grd = ctx.createRadialGradient(-18,-18,10, 0,0,70);
+    grd.addColorStop(0,'#fff'); grd.addColorStop(0.3,'#ff54b5'); grd.addColorStop(1,'rgba(255,84,181,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.moveTo(0, 40); ctx.bezierCurveTo(60, 10, 60, -40, 0, -10); ctx.bezierCurveTo(-60, -40, -60, 10, 0, 40);
+    ctx.fill();
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false});
+    const spr = new THREE.Sprite(mat); spr.scale.set(4,4,1); return spr;
+  }
+  const heartGroup = new THREE.Group();
+  for(let i=0;i<18;i++){ const h = createHeartSprite(); h.position.set((Math.random()-0.5)*60, (Math.random()-0.5)*30, (Math.random()-0.5)*60); heartGroup.add(h);} scene.add(heartGroup);
+
+  // Resize
+  function onResize(){ renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); }
+  addEventListener('resize', onResize); onResize();
+
+  // Animate
+  let t = 0;
+  function animate(){
+    t += 0.003; stars.rotation.y += 0.0008; heartGroup.rotation.y -= 0.0009; heartGroup.position.y = Math.sin(t)*0.6;
+    renderer.render(scene, camera); requestAnimationFrame(animate);
+  }
+  animate();
+
+  /* =====================
+     GSAP REVEALS
+     ===================== */
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.utils.toArray('.fade-up').forEach(el=>{
+    gsap.to(el,{ y:0, opacity:1, duration:0.8, ease:'power2.out', scrollTrigger:{ trigger:el, start:'top 85%' }});
+  });
+
+  /* =====================
+     LOVE RINGS MINI-CANVAS
+     ===================== */
+  const ringsCanvas = document.getElementById('rings');
+  const rctx = ringsCanvas.getContext('2d');
+  function sizeRings(){ const r = ringsCanvas.getBoundingClientRect(); ringsCanvas.width = r.width * devicePixelRatio; ringsCanvas.height = r.height * devicePixelRatio; }
+  function drawRings(t){
+    const w = ringsCanvas.width, h = ringsCanvas.height; rctx.clearRect(0,0,w,h);
+    rctx.globalCompositeOperation = 'lighter';
+    for(let i=0;i<3;i++){
+      rctx.beginPath();
+      const R = (Math.min(w,h)/2.6) - i*18*devicePixelRatio;
+      rctx.arc(w/2, h/2, R, 0, Math.PI*2);
+      const g = rctx.createLinearGradient(0,0,w,0);
+      g.addColorStop(0,'#18b0ff'); g.addColorStop(.5,'#ff54b5'); g.addColorStop(1,'#8a2be2');
+      rctx.strokeStyle = g; rctx.lineWidth = 4*devicePixelRatio;
+      rctx.shadowColor = 'rgba(255,84,181,.6)'; rctx.shadowBlur = 18*devicePixelRatio;
+      rctx.stroke();
+    }
+    // tiny pulse
+    rctx.beginPath(); const R2 = (Math.min(w,h)/2.6); const a = t*0.002;
+    rctx.arc(w/2 + Math.cos(a)*R2, h/2 + Math.sin(a)*R2, 6*devicePixelRatio, 0, Math.PI*2);
+    rctx.fillStyle = '#fff'; rctx.fill();
+  }
+  sizeRings();
+  addEventListener('resize', sizeRings);
+  (function loop(ts){ drawRings(ts||0); requestAnimationFrame(loop); })();
+
+  /* =====================
+     WISH STARS BURST
+     ===================== */
+  document.getElementById('wish').addEventListener('click', (e)=>{
+    const burst = document.createElement('canvas'); burst.width = burst.height = 200; burst.style.position='fixed'; burst.style.left = (e.clientX-100)+'px'; burst.style.top=(e.clientY-100)+'px'; burst.style.pointerEvents='none'; burst.style.filter='drop-shadow(0 0 10px rgba(255,84,181,.8))';
+    document.body.appendChild(burst);
+    const ctx = burst.getContext('2d'); const stars=[]; for(let i=0;i<36;i++){ stars.push({x:100,y:100, vx:(Math.random()-0.5)*6, vy:(Math.random()-0.5)*6, life:60}); }
+    function step(){ ctx.clearRect(0,0,200,200); stars.forEach(s=>{ s.x+=s.vx; s.y+=s.vy; s.vy+=0.06; s.life--; ctx.fillStyle=`hsla(${300+Math.random()*60},100%,70%,${Math.max(s.life/60,0)})`; ctx.beginPath(); ctx.arc(s.x,s.y,2,0,6.28); ctx.fill();});
+      if(stars[0].life>0) requestAnimationFrame(step); else burst.remove(); }
+    step();
+  });
+
+  /* =====================
+     PHOTOS CAROUSEL LAYOUT
+     ===================== */
+  const panels = document.querySelectorAll('.carousel .panel');
+  const n = panels.length; const radius = 430; // px
+  panels.forEach((p,i)=>{ const ang = (i/n)*Math.PI*2; p.style.transform = `rotateY(${ang}rad) translateZ(${radius}px)`; });
+
+  /* =====================
+     GOALS CONNECTOR LINES
+     ===================== */
+  function connectGoals(){
+    const svg = document.getElementById('goalLinks');
+    const wrap = document.querySelector('#goals .container');
+    const cards = [...document.querySelectorAll('#goals .goal')];
+    const r = wrap.getBoundingClientRect();
+    svg.setAttribute('width', r.width); svg.setAttribute('height', r.height);
+    svg.style.left = r.left+'px'; svg.style.top = r.top+'px';
+    svg.innerHTML = '';
+    for(let i=0;i<cards.length-1;i++){
+      const a = cards[i].getBoundingClientRect(); const b = cards[i+1].getBoundingClientRect();
+      const x1 = a.left - r.left + a.width/2; const y1 = a.top - r.top + a.height/2;
+      const x2 = b.left - r.left + b.width/2; const y2 = b.top - r.top + b.height/2;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const d = `M${x1},${y1} C ${x1},${(y1+y2)/2} ${x2},${(y1+y2)/2} ${x2},${y2}`;
+      path.setAttribute('d', d);
+      path.setAttribute('stroke', 'url(#gradLine)');
+      path.setAttribute('fill', 'none'); path.setAttribute('stroke-width', '2'); path.setAttribute('opacity','0.6');
+      svg.appendChild(path);
+    }
+    // defs gradient
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    const lg = document.createElementNS('http://www.w3.org/2000/svg','linearGradient'); lg.id='gradLine'; lg.setAttribute('x1','0'); lg.setAttribute('y1','0'); lg.setAttribute('x2','1'); lg.setAttribute('y2','0');
+    const s1 = document.createElementNS('http://www.w3.org/2000/svg','stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#18b0ff');
+    const s2 = document.createElementNS('http://www.w3.org/2000/svg','stop'); s2.setAttribute('offset','50%'); s2.setAttribute('stop-color','#ff54b5');
+    const s3 = document.createElementNS('http://www.w3.org/2000/svg','stop'); s3.setAttribute('offset','100%'); s3.setAttribute('stop-color','#8a2be2');
+    lg.appendChild(s1); lg.appendChild(s2); lg.appendChild(s3); defs.appendChild(lg); svg.insertBefore(defs, svg.firstChild);
+  }
+  connectGoals(); addEventListener('resize', ()=>setTimeout(connectGoals,100));
+
+  /* =====================
+     LIFETIME CONFETTI
+     ===================== */
+  document.getElementById('confetti').addEventListener('click', ()=>{
+    const canvas = document.createElement('canvas');
+    canvas.style.position='fixed'; canvas.style.left='0'; canvas.style.top='0'; canvas.style.width='100%'; canvas.style.height='100%'; canvas.style.pointerEvents='none'; canvas.style.zIndex='50';
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    function size(){ canvas.width = innerWidth * devicePixelRatio; canvas.height = innerHeight * devicePixelRatio; }
+    size(); addEventListener('resize', size);
+    const bits = Array.from({length:260}, ()=>({ x:Math.random()*canvas.width, y:-20, vy:2+Math.random()*3, vx:(Math.random()-.5)*1.5, r:2+Math.random()*4, a:Math.random()*6.28 }));
+    let frame = 0;
+    (function loop(){ frame++; ctx.clearRect(0,0,canvas.width, canvas.height); bits.forEach(b=>{ b.x+=b.vx; b.y+=b.vy; b.a+=0.05; ctx.fillStyle = `hsl(${(frame+b.x*0.02)%360},100%,70%)`; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*devicePixelRatio,0,6.28); ctx.fill(); }); if(frame<360) requestAnimationFrame(loop); else canvas.remove(); })();
+  });
+
+  /* =====================
+     MUSIC CONTROL
+     ===================== */
+  const audio = document.getElementById('bgm');
+  const musicBtn = document.getElementById('musicBtn');
+  musicBtn.addEventListener('click', async ()=>{
+    if(audio.paused){ try{ await audio.play(); musicBtn.textContent='Pause Music'; }catch(e){ alert('Tap once to enable audio autoplay.'); } }
+    else{ audio.pause(); musicBtn.textContent='Play Music'; }
+  });
+
+</script>
+</body>
+</html>
